@@ -11,15 +11,35 @@ package cld2
 import "C"
 import "unsafe"
 
+type LangInfo struct {
+	Code       string
+	Percent    int
+	IsReliable bool
+}
+
 // Detect returns the language code for detected language
 // in the given text.
-func Detect(text string) string {
+func Detect(text string) []LangInfo {
 	cs := C.CString(text)
-	res := C.DetectLang(cs, -1)
-	C.free(unsafe.Pointer(cs))
-	var lang string
-	if res != nil {
-		lang = C.GoString(res)
+	defer C.free(unsafe.Pointer(cs))
+	var set *C.LangInfo = C.DetectLang(cs, -1)
+	defer C.free(unsafe.Pointer(set))
+
+	size := 3
+	infoSet := []LangInfo{}
+	for _, res := range (*[1 << 30]C.LangInfo)(unsafe.Pointer(set))[:size:size] {
+		code := C.GoString(res.code)
+		if code == "un" {
+			continue
+		}
+
+		infoSet = append(infoSet,
+			LangInfo{
+				Code:       code,
+				Percent:    int(res.percent),
+				IsReliable: (res.is_reliable == true),
+			})
 	}
-	return lang
+
+	return infoSet
 }

@@ -6,7 +6,7 @@
 #include "compact_lang_det.h"
 #include "cld2.h"
 
-const char* DetectLang(char *data, int length) {
+const LangInfo* DetectLang(char *data, int length) {
 
     bool is_plain_text = true;
     CLD2::CLDHints cldhints = {NULL, NULL, 0, CLD2::UNKNOWN_LANGUAGE};
@@ -37,5 +37,14 @@ const char* DetectLang(char *data, int length) {
             &text_bytes,
             &is_reliable);
 
-    return CLD2::LanguageCode(summary_lang);
+    LangInfo res[3] = {
+      { CLD2::LanguageCode(language3[0]), percent3[0], is_reliable },
+      { CLD2::LanguageCode(language3[1]), percent3[1], is_reliable },
+      { CLD2::LanguageCode(language3[2]), percent3[2], is_reliable }
+    };
+
+    LangInfo* info_set = (LangInfo*)std::malloc(3*sizeof(LangInfo));
+    memcpy(info_set, &res, sizeof(res));
+
+    return info_set;
 }
