@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <string>
+#include <cstdlib>
 
 #include "compact_lang_det.h"
 #include "cld2.h"
